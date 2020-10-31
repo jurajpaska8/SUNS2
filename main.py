@@ -16,6 +16,8 @@ from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.svm import SVC
+from scipy import stats
+
 
 
 def load_data(filepath):
@@ -103,18 +105,19 @@ if __name__ == '__main__':
     # acc_test = accuracy_score(Y_test, pred_Y_classes)
 
     # SVM
-    c_range = np.logspace(-2, 5, 5)
-    gamma_range = np.logspace(-5, 3, 5)
-    params = dict(gamma=gamma_range, C=c_range)
-
-    cv = StratifiedShuffleSplit(n_splits=2, test_size=0.2, random_state=42)
-    grid = GridSearchCV(SVC(verbose=1), param_grid=params, cv=cv, verbose=1)
-    grid.fit(X_train, Y_train)
-    scores = grid.cv_results_['mean_test_score'].reshape(len(c_range), len(gamma_range))
+    # c_range = np.logspace(-2, 5, 5)
+    # gamma_range = np.logspace(-5, 3, 5)
+    # params = dict(gamma=gamma_range, C=c_range)
+    #
+    # cv = StratifiedShuffleSplit(n_splits=2, test_size=0.2, random_state=42)
+    # grid = GridSearchCV(SVC(verbose=1), param_grid=params, cv=cv, verbose=1)
+    # grid.fit(X_train, Y_train)
+    # scores = grid.cv_results_['mean_test_score'].reshape(len(c_range), len(gamma_range))
 
     # simple SVM
-    clf = make_pipeline(StandardScaler(), SVC(gamma='auto', verbose=1))
-    clf.fit(X_train, Y_train)
+    clf = make_pipeline(StandardScaler(), SVC(C=1, gamma='auto', verbose=1))
+    svm_history = clf.fit(X_train, Y_train)
     svm_score_train = clf.score(X_train, Y_train)
     svm_score_test = clf.score(X_test, Y_test)
+    print(f'Test results : {svm_score_test} - Train result: {svm_score_train}')
     end = 1
