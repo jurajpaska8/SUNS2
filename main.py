@@ -14,7 +14,7 @@ from sklearn.pipeline import make_pipeline
 
 from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, BatchNormalization
 from sklearn.svm import SVC
 from scipy import stats
 
@@ -67,8 +67,10 @@ if __name__ == '__main__':
 
     # Create the model
     model = Sequential()
-    model.add(Dense(12, input_dim=12, activation='sigmoid'))
-    model.add(Dense(12, activation='sigmoid'))
+    model.add(Dense(30, input_dim=12, activation='sigmoid'))
+    model.add(BatchNormalization())
+    model.add(Dense(15, activation='sigmoid'))
+    model.add(BatchNormalization())
     model.add(Dense(6, activation='softmax')) #sigmoid  ?
 
     # Configure the model and start training
