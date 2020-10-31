@@ -14,7 +14,7 @@ from sklearn.pipeline import make_pipeline
 
 from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Dropout
 from sklearn.svm import SVC
 from scipy import stats
 
@@ -60,22 +60,24 @@ if __name__ == '__main__':
 
     # MLP - PERCEPTRON
     # Train / Test data
-    X_train = train_data_valid.drop(['playlist_genre'], axis=1)
-    Y_train = train_data_valid.playlist_genre
+    X_train = train_data_valid.drop(['playlist_genre'], axis=1).head(500)
+    Y_train = train_data_valid.playlist_genre.head(500)
     X_test = test_data_normalized.drop(['playlist_genre'], axis=1)
     Y_test = test_data_normalized.playlist_genre
 
     # Create the model
     model = Sequential()
-    model.add(Dense(12, input_dim=12, activation='sigmoid'))
-    model.add(Dense(12, activation='sigmoid'))
+    model.add(Dense(150, input_dim=12, activation='sigmoid'))
+    model.add(Dropout(0.5))
+    model.add(Dense(100, activation='sigmoid'))
+    model.add(Dropout(0.5))
     model.add(Dense(6, activation='softmax')) #sigmoid  ?
 
     # Configure the model and start training
     optimizer = keras.optimizers.Adam(lr=0.001)
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=50)
-    history = model.fit(X_train.to_numpy(), pd.get_dummies(Y_train), epochs=1000, batch_size=250, verbose=1, validation_split=0.15, callbacks=[early_stopping])
+    history = model.fit(X_train.to_numpy(), pd.get_dummies(Y_train), epochs=1000, batch_size=100, verbose=1, validation_split=0.15, callbacks=[early_stopping])
 
     # Test the model after training
     test_results = model.evaluate(X_test.to_numpy(), pd.get_dummies(Y_test), verbose=1)
