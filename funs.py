@@ -1,8 +1,9 @@
 import pandas as pd
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 def load_data(filepath):
-    return pd.read_csv(filepath, ',')
+    return pd.read_csv(filepath, ',', index_col=0)
 
 
 def drop_all_na(dataframe):
@@ -42,11 +43,10 @@ def publishers_developers_encoded(steam_data, path):
     steam_data.to_csv(path)
 
 
-def category_encoded(steam_data):
-    steam_data = pd.DataFrame
+def add_features(steam_data):
+    # categories
     steam_data['Multiplayer'] = 0
     steam_data['Singleplayer'] = 0
-
     steam_data['Action'] = 0
     steam_data['Adventure'] = 0
     steam_data['Indie'] = 0
@@ -57,16 +57,85 @@ def category_encoded(steam_data):
     steam_data['Racing'] = 0
     steam_data['Sports'] = 0
 
-    steam_data['2D'] = 0
-    steam_data['3D'] = 0
+    # tags
+    steam_data['2d'] = 0
+    steam_data['3d'] = 0
     steam_data['old_school'] = 0
     steam_data['classic'] = 0
     steam_data['war'] = 0
     steam_data['e_sports'] = 0
     steam_data['team_based'] = 0
+    return steam_data
 
-    for index, row in steam_data:
-        if 'Single-player' in row['categories']:
-            row['Singleplayer'] = 1
-        if 'Multi-player' in row['categories']:
-            row['Multiplayer'] = 1
+def category_encoded_tags(steam_data, steam_data_spy, label):
+    cols_label = [col for col in steam_data_spy.columns if label in col]
+    idx = 0
+    for id in steam_data.appid:
+        row_num = steam_data_spy.index[steam_data_spy['appid'] == id].tolist()[0]
+        i = 0
+        for col in cols_label:
+            col_num = steam_data_spy.columns.get_loc(col)
+            i += steam_data_spy.iat[row_num, col_num]
+        if i > 0:
+            steam_data.at[idx, label] = 1
+        idx += 1
+
+
+def category_encoded(steam_data):
+    idx = 0
+    for index in steam_data.appid:
+        if 'Single-player' in steam_data.at[idx, 'categories']:
+            steam_data.at[idx, 'Singleplayer'] = 1
+        if 'Multi-player' in steam_data.at[idx, 'categories']:
+            steam_data.at[idx, 'Multiplayer'] = 1
+        if 'Action' in steam_data.at[idx, 'genres']:
+            steam_data.at[idx, 'Action'] = 1
+        if 'Adventure' in steam_data.at[idx, 'genres']:
+            steam_data.at[idx, 'Adventure'] = 1
+        if 'Indie' in steam_data.at[idx, 'genres']:
+            steam_data.at[idx, 'Indie'] = 1
+        if 'Strategy' in steam_data.at[idx, 'genres']:
+            steam_data.at[idx, 'Strategy'] = 1
+        if 'RPG' in steam_data.at[idx, 'genres']:
+            steam_data.at[idx, 'RPG'] = 1
+        if 'Casual' in steam_data.at[idx, 'genres']:
+            steam_data.at[idx, 'Casual'] = 1
+        if 'Simulation' in steam_data.at[idx, 'genres']:
+            steam_data.at[idx, 'Simulation'] = 1
+        if 'Racing' in steam_data.at[idx, 'genres']:
+            steam_data.at[idx, 'Racing'] = 1
+        if 'Sports' in steam_data.at[idx, 'genres']:
+            steam_data.at[idx, 'Sports'] = 1
+        idx += 1
+
+
+def visualisation(df, cluster_count, id_label):
+    features = df.columns
+    labels = []
+    for i in range(cluster_count):
+        labels.append(i)
+
+    dataframe_collection = {}
+    x = np.arange(len(labels))  # the label locations
+    width = 0.35  # the width of the bars
+
+    for i in range(cluster_count):
+        dataframe_collection[i] = df.loc[df[id_label] == i]
+
+    idx = 0
+    for f in features:
+        fig, ax = plt.subplots()
+        vals = []
+        for i in range(cluster_count):
+            vals.append(dataframe_collection[i][f].mean())
+        rects1 = ax.bar(x - width / 2, vals,
+                        width, label=f)
+        # Add some text for labels, title and custom x-axis tick labels, etc.
+        ax.set_ylabel('Scores')
+        ax.set_title('Scores by feature')
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels)
+        ax.legend()
+        idx += 1
+        plt.show()
+
