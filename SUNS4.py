@@ -1,4 +1,3 @@
-from random import randrange
 
 from sklearn import preprocessing
 from sklearn.cluster import MiniBatchKMeans, DBSCAN
@@ -111,8 +110,8 @@ if __name__ == '__main__':
     # encoded.to_csv('./data4/encoded.csv')
 
     final = funs.load_data('./data4/final.csv')
-    final['release_date'] = final['release_date'].str.split('-', expand=False).str[0].astype(int)
-    final['owners'] = final['owners'].str.split('-', expand=False).str[1].astype(int)
+    # final['release_date'] = final['release_date'].str.split('-', expand=False).str[0].astype(int)
+    # final['owners'] = final['owners'].str.split('-', expand=False).str[1].astype(int)
     final_dropped = final.drop(columns=['appid', 'name', 'platforms', 'required_age', 'categories', 'genres', 'owners', 'english', 'Multiplayer', 'Singleplayer', 'positive_ratings', 'negative_ratings', 'median_playtime'])
 
     # what features contain 'classic' games

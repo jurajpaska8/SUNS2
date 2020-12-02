@@ -139,3 +139,15 @@ def visualisation(df, cluster_count, id_label):
         idx += 1
         plt.show()
 
+
+def platforms_encode(dataframe):
+    dataframe['windows'] = 0
+    dataframe['linux'] = 0
+    dataframe['mac'] = 0
+    for index in range(len(dataframe.appid)):
+        if 'windows' in dataframe.at[index, 'platforms']:
+            dataframe.at[index, 'windows'] = 1
+        if 'linux' in dataframe.at[index, 'platforms']:
+            dataframe.at[index, 'linux'] = 1
+        if 'mac' in dataframe.at[index, 'platforms']:
+            dataframe.at[index, 'mac'] = 1
