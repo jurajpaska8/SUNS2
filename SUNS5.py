@@ -2,8 +2,11 @@ import os
 import pandas as pd
 import numpy as np
 import keras.preprocessing
+import datetime
 from tensorflow.python.keras.layers import Conv2D, Activation, MaxPooling2D, Dropout, Flatten, Dense
 from tensorflow.python.keras.models import Sequential
+import tensorflow as tf
+
 
 if __name__ == '__main__':
     ########################################################################
@@ -49,14 +52,14 @@ if __name__ == '__main__':
 
     train_labels_dropped = train_labels.drop(indices_to_drop)
 
-    # image generators
+    # image generators - first 900 rows
     image_generator = keras.preprocessing.image.ImageDataGenerator(
         rescale=1. / 255.,
         validation_split=0.2,
     )
 
     training_generator = image_generator.flow_from_dataframe(
-        dataframe=train_labels_dropped,
+        dataframe=train_labels_dropped[:1000],
         directory='./data5/images',
         x_col='path',
         y_col='masterCategory',
@@ -66,7 +69,7 @@ if __name__ == '__main__':
     )
 
     validation_generator = image_generator.flow_from_dataframe(
-        dataframe=train_labels_dropped,
+        dataframe=train_labels_dropped[:1000],
         directory='./data5/images',
         x_col='path',
         y_col='masterCategory',
@@ -75,14 +78,17 @@ if __name__ == '__main__':
         subset='validation'
     )
 
-    # TODO test generator
+    test_set = train_labels_dropped[1000:1100]
 
     # keras network
     classes_train = len(training_generator.class_indices)
     classes_val = len(validation_generator.class_indices)
 
     optimizer = keras.optimizers.Adam(lr=0.001)
-    early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=10) # TODO TENSORBOARD, checkpoints
+    early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+
+    log_dir = './logs/SUNS5/' + datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
     model = Sequential()
     model.add(Conv2D(60, (3, 3), padding='same', input_shape=(80, 60, 3)))
@@ -101,7 +107,7 @@ if __name__ == '__main__':
     model.add(Dense(512))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(4, activation='softmax'))
+    model.add(Dense(classes_train, activation='softmax'))
 
     # compile
     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
@@ -114,8 +120,8 @@ if __name__ == '__main__':
                                    validation_data=validation_generator,
                                    steps_per_epoch=step_size_train,
                                    validation_steps=step_size_validation,
-                                   epochs=1,
-                                   callbacks=[early_stopping])
+                                   epochs=30,
+                                   callbacks=[early_stopping, tensorboard_callback])
 
     # val = n.load
     # pred = model.predict(val)
@@ -123,4 +129,10 @@ if __name__ == '__main__':
     # true_classes = validation_generator.classes
 
     # conffusion true/predicted
+    # figcm = go.Figure
+    # figcm.show()
+
+    # loss and score graphs
+
+    # tensorboard --logdir logs/SUNS520201203-172909 TODO to venv and open localhost
     end = 1
